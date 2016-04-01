@@ -1,4 +1,6 @@
-PORT=5000
+WORK_DIR=$1
+DATA=$2
+PORT=$3
 
-g++ -o /root/network/server.out /root/network/server.cpp
-/root/network/server.out /data/string.txt $PORT
+g++ -o $WORK_DIR/server.out $WORK_DIR/server.cpp
+$WORK_DIR/server.out $DATA $PORT
