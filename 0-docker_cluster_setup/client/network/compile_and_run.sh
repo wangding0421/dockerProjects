@@ -3,5 +3,5 @@ DATA=$2
 SERVER_IP=$3
 PORT=$4
 
-g++ -o $WORK_DIR/client.out $WORK_DIR/client.cpp
-$WORK_DIR/client.out $DATA $SERVER_IP $PORT
+g++ -o $WORK_DIR/catclient.out $WORK_DIR/catclient.cpp
+$WORK_DIR/catclient.out $DATA $SERVER_IP $PORT
