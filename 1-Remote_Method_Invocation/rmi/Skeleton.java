@@ -32,6 +32,7 @@ public class Skeleton<T>
     Class<T> sclass;
     T server;
     public InetSocketAddress sockaddr;
+
     /** Creates a <code>Skeleton</code> with no initial server address. The
         address will be determined by the system when <code>start</code> is
         called. Equivalent to using <code>Skeleton(null)</code>.
@@ -56,17 +57,10 @@ public class Skeleton<T>
             throw new NullPointerException();
         }
 
-        if (!c.isInterface()) {
-            throw new Error("Given class is not a interface!");
+        if (!c.isInterface() || !RMIExcpetionCheck(c)) {
+            throw new Error("Given class is not a interface or a remote interface!");
         }
 
-        Method[] methods = c.getDeclaredMethods();
-        for (Method method : methods) {
-            Class[] exceptions = method.getExceptionTypes();
-            if (!Arrays.asList(exceptions).contains(RMIException.class)) {
-                throw new Error("Given class is not a remote interface!");
-            }
-        }
         sclass = c;
         this.server = server;
         sockaddr = new InetSocketAddress(Config.PORT);
@@ -92,8 +86,17 @@ public class Skeleton<T>
      */
     public Skeleton(Class<T> c, T server, InetSocketAddress address)
     {
-        
-        throw new UnsupportedOperationException("not implemented");
+        if (c == null || server == null) {
+            throw new NullPointerException();
+        }
+
+        if (!c.isInterface() || !RMIExcpetionCheck(c)) {
+            throw new Error("Given class is not a interface or a remote interface!");
+        }
+
+        sclass = c;
+        this.server = server;
+        sockaddr = address;
     }
 
     /** Called when the listening thread exits.
@@ -116,6 +119,7 @@ public class Skeleton<T>
      */
     protected void stopped(Throwable cause)
     {
+
     }
 
     /** Called when an exception occurs at the top level in the listening
@@ -164,6 +168,7 @@ public class Skeleton<T>
      */
     public synchronized void start() throws RMIException
     {
+        
         throw new UnsupportedOperationException("not implemented");
     }
 
@@ -180,4 +185,16 @@ public class Skeleton<T>
     {
         throw new UnsupportedOperationException("not implemented");
     }
+
+    private boolean RMIExcpetionCheck(Class c){
+        Method[] methods = c.getDeclaredMethods();
+        for (Method method : methods) {
+            Class<?>[] exceptions = method.getExceptionTypes();
+            if (!Arrays.asList(exceptions).contains(RMIException.class)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
