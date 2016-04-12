@@ -1,4 +1,6 @@
 package rmi;
+
+import rmi.config.Config;
 import java.lang.reflect.Method;
 import java.net.*;
 import java.util.Arrays;
@@ -30,8 +32,6 @@ public class Skeleton<T>
     Class<T> sclass;
     T server;
     public InetSocketAddress sockaddr;
-    
-
     /** Creates a <code>Skeleton</code> with no initial server address. The
         address will be determined by the system when <code>start</code> is
         called. Equivalent to using <code>Skeleton(null)</code>.
@@ -69,7 +69,7 @@ public class Skeleton<T>
         }
         sclass = c;
         this.server = server;
-        sockaddr = new InetSocketAddress(10000);
+        sockaddr = new InetSocketAddress(Config.PORT);
     }
 
     /** Creates a <code>Skeleton</code> with the given initial server address.
