@@ -1,6 +1,7 @@
 package rmi;
 
 import rmi.config.Config;
+import rmi.mylock.MyLock;
 import java.lang.reflect.Method;
 import java.net.*;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ public class Skeleton<T>
 {
     Class<T> sclass;
     T server;
+    MyLock stopLock;
     public InetSocketAddress sockaddr;
 
     /** Creates a <code>Skeleton</code> with no initial server address. The
@@ -61,8 +63,9 @@ public class Skeleton<T>
             throw new Error("Given class is not a interface or a remote interface!");
         }
 
-        sclass = c;
+        this.sclass = c;
         this.server = server;
+        this.stopLock = new MyLock(1);
         sockaddr = new InetSocketAddress(Config.PORT);
     }
 
@@ -94,8 +97,9 @@ public class Skeleton<T>
             throw new Error("Given class is not a interface or a remote interface!");
         }
 
-        sclass = c;
+        this.sclass = c;
         this.server = server;
+        this.stopLock = new MyLock(1);
         sockaddr = address;
     }
 
@@ -119,7 +123,6 @@ public class Skeleton<T>
      */
     protected void stopped(Throwable cause)
     {
-
     }
 
     /** Called when an exception occurs at the top level in the listening
@@ -168,8 +171,13 @@ public class Skeleton<T>
      */
     public synchronized void start() throws RMIException
     {
-        
-        throw new UnsupportedOperationException("not implemented");
+        if (this.stopLock.getStopSign() != 1) {
+            System.out.println("This skeleton is already running!");
+        }
+        else {
+            throw new UnsupportedOperationException("not implemented");
+        }
+        notify();
     }
 
     /** Stops the skeleton server, if it is already running.
@@ -183,10 +191,27 @@ public class Skeleton<T>
      */
     public synchronized void stop()
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (this.stopLock.getStopSign() == 1) {
+            System.out.println("This skeleton is already stopped!");
+        }
+        else {
+            this.stopLock.setStopSign(2);
+            while (this.stopLock.getStopSign() != 1) {
+                try {
+                    wait();
+                }
+                catch (Throwable e) {
+                    System.out.println("Error " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            stopped(new Throwable());
+            System.out.println("Skeleton stopped!");
+        }
+        notify();
     }
 
-    private boolean RMIExcpetionCheck(Class c){
+    private boolean RMIExcpetionCheck(Class<?> c){
         Method[] methods = c.getDeclaredMethods();
         for (Method method : methods) {
             Class<?>[] exceptions = method.getExceptionTypes();
