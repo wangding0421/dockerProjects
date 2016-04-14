@@ -1,7 +1,5 @@
 package rmi;
 
-import rmi.config.Config;
-import rmi.mylock.MyLock;
 import java.lang.reflect.Method;
 import java.net.*;
 import java.util.Arrays;
@@ -30,10 +28,16 @@ import java.util.Arrays;
 */
 public class Skeleton<T>
 {
-    Class<T> sclass;
-    T server;
-    MyLock stopLock;
-    public InetSocketAddress sockaddr;
+    private Class<T> sclass = null;
+    private T server = null;
+
+    private volatile boolean isRunning = false;
+
+    private int port = 0;
+    private String hostName = null;
+
+    private ServerSocket listen_socket;
+
 
     /** Creates a <code>Skeleton</code> with no initial server address. The
         address will be determined by the system when <code>start</code> is
@@ -60,13 +64,11 @@ public class Skeleton<T>
         }
 
         if (!c.isInterface() || !RMIExcpetionCheck(c)) {
-            throw new Error("Given class is not a interface or a remote interface!");
+            throw new Error("Given class is not a interface or not a remote interface!");
         }
 
         this.sclass = c;
         this.server = server;
-        this.stopLock = new MyLock(1);
-        sockaddr = new InetSocketAddress(Config.PORT);
     }
 
     /** Creates a <code>Skeleton</code> with the given initial server address.
@@ -99,9 +101,10 @@ public class Skeleton<T>
 
         this.sclass = c;
         this.server = server;
-        this.stopLock = new MyLock(1);
-        sockaddr = address;
+        this.port = address.getPort();
+        this.hostName = address.getHostName();
     }
+
 
     /** Called when the listening thread exits.
 
@@ -171,13 +174,29 @@ public class Skeleton<T>
      */
     public synchronized void start() throws RMIException
     {
-        if (this.stopLock.getStopSign() != 1) {
-            System.out.println("This skeleton is already running!");
+        if (this.isRunning == false) {
+            this.setRunningStatus(true);
+            try {
+                listen_socket = new ServerSocket(this.port);
+                this.port = listen_socket.getLocalPort();
+
+                if (this.hostName == null) {
+                    this.hostName = listen_socket.getInetAddress().getHostName();
+                }
+
+                lThread listen_thread = new lThread(this, listen_socket);
+                listen_thread.start();
+            }
+            catch (Throwable e) {
+                System.out.println("Error " + e.getMessage());
+                e.printStackTrace();
+            }
+
         }
         else {
-            throw new UnsupportedOperationException("not implemented");
+            throw new RMIException("Server already started!");
         }
-        notify();
+
     }
 
     /** Stops the skeleton server, if it is already running.
@@ -191,27 +210,25 @@ public class Skeleton<T>
      */
     public synchronized void stop()
     {
-        if (this.stopLock.getStopSign() == 1) {
-            System.out.println("This skeleton is already stopped!");
+        try {
+            this.setRunningStatus(false);
+            listen_socket.close();
         }
-        else {
-            this.stopLock.setStopSign(2);
-            while (this.stopLock.getStopSign() != 1) {
-                try {
-                    wait();
-                }
-                catch (Throwable e) {
-                    System.out.println("Error " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-            stopped(new Throwable());
-            System.out.println("Skeleton stopped!");
+        catch (Throwable e) {
+            System.out.println("Error " + e.getMessage());
+            e.printStackTrace();
         }
-        notify();
     }
 
-    private boolean RMIExcpetionCheck(Class<?> c){
+    public synchronized boolean getRunningStatus() {
+        return isRunning;
+    }
+
+    public synchronized void setRunningStatus(boolean rs) {
+        isRunning = rs;
+    }
+
+    private static boolean RMIExcpetionCheck(Class<?> c){
         Method[] methods = c.getDeclaredMethods();
         for (Method method : methods) {
             Class<?>[] exceptions = method.getExceptionTypes();
@@ -221,5 +238,4 @@ public class Skeleton<T>
         }
         return true;
     }
-
 }
