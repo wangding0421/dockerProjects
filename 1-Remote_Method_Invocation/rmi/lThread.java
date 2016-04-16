@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.net.*;
 
 public class lThread extends Thread {
-    private Skeleton skeleton = null;
+
+    private Skeleton<?> skeleton = null;
     private ServerSocket listen_socket = null;
     private Exception stopException = null;
-    public lThread (Skeleton s, ServerSocket ls) {
+
+    public lThread (Skeleton<?> s, ServerSocket ls) {
         this.skeleton = s;
         this.listen_socket = ls;
     }

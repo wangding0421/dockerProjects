@@ -220,6 +220,14 @@ public class Skeleton<T>
         }
     }
 
+    public Class<T> getServerClass (){
+        return this.sclass;
+    }
+
+    public T getServer (){
+        return this.server;
+    }
+
     public synchronized boolean getRunningStatus() {
         return isRunning;
     }
