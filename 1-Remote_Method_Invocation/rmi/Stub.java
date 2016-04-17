@@ -3,6 +3,8 @@ package rmi;
 import java.net.*;
 import java.lang.reflect.*;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /** RMI stub factory.
 
@@ -48,27 +50,27 @@ public abstract class Stub
                       this interface cannot be dynamically created.
      */
     public static <T> T create(Class<T> c, Skeleton<T> skeleton)
-        throws UnknownHostException
+    throws UnknownHostException
     {
-      if(c == null || skeleton == null) {
-          throw new NullPointerException();
-      } else if(skeleton.getHostName() == null || !skeleton.getRunningStatus() ) {
-          throw new IllegalStateException();
-      } else if( !c.isInterface() || !RMIExceptioncheck(c) ) {
-          throw new Error("C does not represent a remote interface");
-      }
+        if(c == null || skeleton == null) {
+            throw new NullPointerException();
+        } else if(skeleton.getHostName() == null || !skeleton.getRunningStatus() ) {
+            throw new IllegalStateException();
+        } else if( !c.isInterface() || !RMIExcpetionCheck(c) ) {
+            throw new Error("C does not represent a remote interface");
+        }
 
-      /* wildcard is 0.0.0.0 not * */
-      if(skeleton.getHostName().equals("0.0.0.0")) {
-          /* it will throw UnknownHostException */
-          InetAddress localhost = InetAddress.getLocalHost();
-      }
+        /* wildcard is 0.0.0.0 not * */
+        if(skeleton.getHostName().equals("0.0.0.0")) {
+            /* it will throw UnknownHostException */
+            InetAddress localhost = InetAddress.getLocalHost();
+        }
 
-      InetSocketAddress address = new InetSocketAddress(skeleton.getHostName(), skeleton.getPort());
-      InvocationHandler handler = new MyInvocationHandler(address, c);
-      Object dynamicproxy = (T) Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, handler);
+        InetSocketAddress address = new InetSocketAddress(skeleton.getHostName(), skeleton.getPort());
+        InvocationHandler handler = new MyInvocationHandler(address, c);
+        Object dynamicproxy = (T) Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, handler);
 
-      return (T) dynamicproxy;
+        return (T) dynamicproxy;
     }
 
     /** Creates a stub, given a skeleton with an assigned address and a hostname
@@ -108,7 +110,7 @@ public abstract class Stub
             throw new NullPointerException();
         } else if(skeleton.getPort() == 0) {
             throw new IllegalStateException();
-        } else if( !c.isInterface() || !RMIExceptioncheck(c) ) {
+        } else if( !c.isInterface() || !RMIExcpetionCheck(c) ) {
             throw new Error("C does not represent a remote interface");
         }
 
@@ -140,9 +142,9 @@ public abstract class Stub
     {
         if(c == null || address == null) {
             throw new NullPointerException();
-        } else if( !c.isInterface() || !RMIExceptioncheck(c) ) {
+        } else if( !c.isInterface() || !RMIExcpetionCheck(c) ) {
             throw new Error("C does not represent a remote interface");
-    	}
+        }
 
         InvocationHandler handler = new MyInvocationHandler(address, c);
         Object dynamicproxy = (T) Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, handler);
@@ -153,16 +155,15 @@ public abstract class Stub
     /* Following are private helper functions */
 
     /* check if all the methods of an interface have thrown RMIException */
-    private static boolean RMIExceptioncheck(Class c) {
-    	Method[] methods = c.getMethods();
-    	for(int i = 0; i < methods.length; i++) {
-    		Class[] exceptions = methods[i].getExceptionTypes();
-    		for(int j = 0; j < exceptions.length; j++) {
-    			if(exceptions[j].getName().contains("RMIException")) break;
-    			else if (j == exceptions.length - 1) return false;
-    		}
-    	}
-    	return true;
+    private static boolean RMIExcpetionCheck(Class<?> c){
+        Method[] methods = c.getDeclaredMethods();
+        for (Method method : methods) {
+            Class<?>[] exceptions = method.getExceptionTypes();
+            if (!Arrays.asList(exceptions).contains(RMIException.class)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
