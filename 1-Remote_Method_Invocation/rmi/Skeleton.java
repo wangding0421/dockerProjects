@@ -228,6 +228,14 @@ public class Skeleton<T>
         return this.server;
     }
 
+    public String getHostName() {
+		    return hostName;
+	  }
+
+    public int getPort() {
+		    return port;
+    }
+
     public synchronized boolean getRunningStatus() {
         return isRunning;
     }
