@@ -68,9 +68,8 @@ public abstract class Stub
 
         InetSocketAddress address = new InetSocketAddress(skeleton.getHostName(), skeleton.getPort());
         InvocationHandler handler = new MyInvocationHandler(address, c);
-        Object dynamicproxy = (T) Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, handler);
 
-        return (T) dynamicproxy;
+        return (T) Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, handler);
     }
 
     /** Creates a stub, given a skeleton with an assigned address and a hostname
@@ -116,9 +115,8 @@ public abstract class Stub
 
         InetSocketAddress address = new InetSocketAddress(hostname, skeleton.getPort());
         InvocationHandler handler = new MyInvocationHandler(address, c);
-        Object dynamicproxy = (T) Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, handler);
 
-        return (T) dynamicproxy;
+        return (T) Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, handler);
     }
 
     /** Creates a stub, given the address of a remote server.
@@ -147,9 +145,7 @@ public abstract class Stub
         }
 
         InvocationHandler handler = new MyInvocationHandler(address, c);
-        Object dynamicproxy = (T) Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, handler);
-
-        return (T) dynamicproxy;
+        return (T) Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, handler);
     }
 
     /* Following are private helper functions */
