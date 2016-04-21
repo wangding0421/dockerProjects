@@ -20,9 +20,8 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
         if(method.getName().equals("toString")) {
             if (method.getReturnType().getName().equals("java.lang.String") &&
             method.getParameterTypes().length == 0) {
-                MyInvocationHandler handler = (MyInvocationHandler)java.lang.reflect.Proxy.getInvocationHandler(proxy);
-                return "Interface name : " + handler.getinterface().getName() + "\n"
-                + "Connecting to : " + handler.getAddress().toString();
+                return "Interface name : " + this.interfaceclass.getName() + "\n"
+                + "Connecting to : " + this.address.toString();
             } else {
                 throw new RMIException("toString method called incorrectly");
             }
@@ -32,8 +31,7 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
         if(method.getName().equals("hashCode")) {
             if (method.getReturnType().getName().equals("int") &&
             method.getParameterTypes().length == 0) {
-                MyInvocationHandler handler = (MyInvocationHandler)java.lang.reflect.Proxy.getInvocationHandler(proxy);
-                return handler.getinterface().hashCode() * 1011 + handler.getAddress().hashCode() * 17;
+                return this.interfaceclass.hashCode() * 1011 + this.address.hashCode() * 17;
             } else {
                 throw new RMIException("hashCode method called incorrectly");
             }
@@ -47,12 +45,11 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
                 if(args.length != 1) throw new Error("equals method called incorrectly");
                 if(args[0] == null) return false;
 
-                MyInvocationHandler handler1 = (MyInvocationHandler)java.lang.reflect.Proxy.getInvocationHandler(proxy);
-                MyInvocationHandler handler2 = (MyInvocationHandler) java.lang.reflect.Proxy.getInvocationHandler(args[0]);
+                MyInvocationHandler otherHandler = (MyInvocationHandler) java.lang.reflect.Proxy.getInvocationHandler(args[0]);
 
                 /* if interface are same and the network are same, then they are equal*/
-                if( handler1.getinterface().equals(handler2.getinterface()) &&
-                handler1.getAddress().equals(handler2.getAddress()) ) {
+                if( this.interfaceclass.equals(otherHandler.getinterface()) &&
+                this.address.equals(otherHandler.getAddress()) ) {
                     return true;
                 }
                 else {
@@ -65,12 +62,9 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
 
 
         /* Do the real call */
-
-        Socket connection;
         myObject returnValue = null;
-
         try {
-            connection = new Socket(address.getHostName(), address.getPort());
+            Socket connection = new Socket(address.getHostName(), address.getPort());
             ObjectInputStream in = new ObjectInputStream(connection.getInputStream());
             ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream());
 
@@ -81,11 +75,7 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
 
             returnValue = (myObject)in.readObject();
             connection.close();
-        } catch (IOException e) {
-            throw new RMIException(e.getCause());
-        } catch (ClassNotFoundException e) {
-            throw new RMIException(e.getCause());
-		} catch (Exception e) {
+        } catch (Exception e) {
             throw new RMIException(e.getCause());
         }
 
