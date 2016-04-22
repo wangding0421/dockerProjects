@@ -8,7 +8,7 @@ RUN \
   apt-get install -y build-essential && \
   apt-get install -y software-properties-common && \
   apt-get install -y byobu curl git htop man unzip vim wget && \
-  apt-get install -y openjdk-7-jre && \
+  apt-get install -y openjdk-7-jdk && \
   rm -rf /var/lib/apt/lists/*
 
 # Define working directory.

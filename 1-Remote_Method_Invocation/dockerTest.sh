@@ -5,22 +5,20 @@
 DOCKER_MACHINE_NAME=default
 
 # Set to the names of the Docker images you want to use
-SERVER_IMAGE=dingchao/javaserver
-CLIENT_IMAGE=dingchao/javaclient
+IMAGE=dingchao/javarmi
 
 # Set the names of the Docker containers for corresponding images
 SERVER_CONTAINER=server
 CLIENT_CONTAINER=client
 
 # Set the local directories to the server and the client
-LOCAL_SERVER_DIR=$(pwd)'/server'
-LOCAL_CLIENT_DIR=$(pwd)'/client'
+LOCAL_DIR=$(pwd)
 
 # Set the image directories
 WORK_DIR='/root/RMI'
 
 # Set the port
-PORT=5000
+#PORT=7000
 
 #########################################################################
 # Create Docker machine (if neccesary)
@@ -57,5 +55,24 @@ echo "Building images"
 echo "-----------------------------------------------------------"
 eval $(docker-machine env $DOCKER_MACHINE_NAME) 
 # Build the client and server ubuntu Images
-docker build -t $SERVER_IMAGE $LOCAL_SERVER_DIR
-docker build -t $CLIENT_IMAGE $LOCAL_CLIENT_DIR
+docker build -t $IMAGE $LOCAL_DIR
+
+#########################################################################
+# Start running of 2 containers
+#########################################################################
+echo "-----------------------------------------------------------"
+echo "Start running of 2 containers"
+echo "-----------------------------------------------------------"
+
+
+docker run -itd --name $SERVER_CONTAINER -v $LOCAL_DIR:$WORK_DIR $IMAGE bash $WORK_DIR/compile_and_runServer.sh
+
+SERVER_IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $SERVER_CONTAINER)
+
+docker run -itd --name $CLIENT_CONTAINER -v $LOCAL_DIR:$WORK_DIR $IMAGE bash $WORK_DIR/compile_and_runClient.sh $SERVER_IP
+
+sleep 5
+docker logs $CLIENT_CONTAINER
+
+docker stop $CLIENT_CONTAINER $SERVER_CONTAINER
+docker rm $CLIENT_CONTAINER $SERVER_CONTAINER

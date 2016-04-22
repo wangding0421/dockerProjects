@@ -1,0 +1,3 @@
+make
+
+java hellotest/HelloServer
