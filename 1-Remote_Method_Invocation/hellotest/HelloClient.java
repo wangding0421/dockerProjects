@@ -19,28 +19,31 @@ public class HelloClient
         HelloInterface   stub;
 
         // Create the stub.
-        try
-        {
-            stub = Stub.create(HelloInterface.class, address);
-        }
-        catch(Throwable t)
-        {
-            System.out.println(t.toString());
-            return;
+        for (int i = 0; i < 4; i++){
+            try
+                {
+                    stub = Stub.create(HelloInterface.class, address);
+                }
+            catch(Throwable t)
+                {
+                    System.out.println(t.toString());
+                    return;
+                }
+
+            try
+                {
+                    System.out.println(stub.sayHello());
+                }
+            catch(RMIException e)
+                {
+                    System.out.println(e.toString());
+                }
+            catch(Throwable t)
+                {
+                    System.out.println(t.toString());
+                }
         }
 
-        try
-        {
-            System.out.println(stub.sayHello());
-        }
-        catch(RMIException e)
-        {
-            System.out.println(e.toString());
-        }
-        catch(Throwable t)
-        {
-            System.out.println(t.toString());
-        }
 
     }
 

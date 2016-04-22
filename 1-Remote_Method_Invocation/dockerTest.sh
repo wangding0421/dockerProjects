@@ -32,19 +32,27 @@ echo "-----------------------------------------------------------"
 
 # Machine exists and is Running
 if (docker-machine ls | grep "^$DOCKER_MACHINE_NAME .* Running"); then
-  echo "-----------------------------------------------------------"
-  echo "Machine exists and is already running"
-  echo "Moving over to next step ..."
-  echo "-----------------------------------------------------------"
+    echo "-----------------------------------------------------------"
+    echo "Machine exists and is already running"
+    echo "Moving over to next step ..."
+    echo "-----------------------------------------------------------"
 else
 
-  # Machine exists but Stopped
-  if (docker-machine ls | grep "^$DOCKER_MACHINE_NAME .* Stopped"); then
-    echo "-----------------------------------------------------------"
-    echo "Starting Docker machine ... $DOCKER_MACHINE_NAME"
-    echo "-----------------------------------------------------------"
-    docker-machine start $DOCKER_MACHINE_NAME
-  fi
+    # Machine doesnt exist
+    if !(docker-machine ls | grep "^$DOCKER_MACHINE_NAME "); then
+        echo "-----------------------------------------------------------"
+        echo "Creating Docker machine: $DOCKER_MACHINE_NAME"
+        echo "-----------------------------------------------------------"
+        docker-machine create --driver=virtualbox $DOCKER_MACHINE_NAME
+    fi
+
+    # Machine exists but Stopped
+    if (docker-machine ls | grep "^$DOCKER_MACHINE_NAME .* Stopped"); then
+        echo "-----------------------------------------------------------"
+        echo "Starting Docker machine ... $DOCKER_MACHINE_NAME"
+        echo "-----------------------------------------------------------"
+        docker-machine start $DOCKER_MACHINE_NAME
+    fi
 fi
 
 #########################################################################
