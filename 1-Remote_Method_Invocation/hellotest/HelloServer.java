@@ -14,7 +14,6 @@ public class HelloServer
         address = new InetSocketAddress(7000);
         server = new HelloImpl();
         skeleton = new Skeleton<HelloInterface>(HelloInterface.class, server, address);
-        stopped = false;
 
         try {
             skeleton.start();

@@ -12,8 +12,6 @@ public class HelloClient
         boolean                     listening;
 
         address = new InetSocketAddress(7000);
-        listening = true;
-        HelloImpl impl = new HelloImpl();
         HelloInterface   stub;
 
         // Create the stub.
