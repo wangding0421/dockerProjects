@@ -5,8 +5,8 @@ import rmi.*;
 public class HelloImpl implements HelloInterface
 {
     @Override
-    public String sayHello() throws RMIException
+    public String sayHello(int idNumber) throws RMIException
     {
-        return "Hello, World";
+        return "Pong " + idNumber;
     }
 }

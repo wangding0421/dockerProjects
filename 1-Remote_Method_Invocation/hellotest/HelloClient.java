@@ -10,8 +10,8 @@ public class HelloClient
     {
         InetSocketAddress           address;
         boolean                     listening;
-        if (args.length == 0) {
-            System.out.println("Please provide the Server IP!");
+        if (args.length != 2) {
+            System.out.println("Please provide the Server IP an then the idNumber!");
             return;
         }
         String serverIP = args[0];
@@ -32,7 +32,7 @@ public class HelloClient
 
             try
                 {
-                    System.out.println(stub.sayHello());
+                    System.out.println(stub.sayHello(Integer.parseInt(args[1])));
                 }
             catch(RMIException e)
                 {
