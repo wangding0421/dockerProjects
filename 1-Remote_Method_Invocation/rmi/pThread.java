@@ -16,26 +16,20 @@ public class pThread extends Thread {
 
     public void run() {
         try {
-            myObject serverMyObject = null;
+            Object serverMyObject = null;
             ObjectOutputStream out = new ObjectOutputStream(this.connection.getOutputStream());
             out.flush();
             ObjectInputStream in = new ObjectInputStream(this.connection.getInputStream());
             String methodName = (String) in.readObject();
             Class<?>[] parameterTypes = (Class[]) in.readObject();
             Method serverMethod = this.skeleton.getServerClass().getMethod(methodName, parameterTypes);
-
             String returnType = (String) in.readObject();
-            if (!returnType.equals(serverMethod.getReturnType().getName())) {
-                Throwable t = new RMIException("The Returntype of method do not agree!");
-                serverMyObject = new myObject(t, true);
-            }
 
             try {
-                Object serverObject = serverMethod.invoke(this.skeleton.getServer(), (Object[])in.readObject());
-                serverMyObject = new myObject(serverObject, false);
+                serverMyObject = serverMethod.invoke(this.skeleton.getServer(), (Object[])in.readObject());
             }
             catch (Throwable e) {
-                serverMyObject = new myObject(e.getCause(), true);
+                serverMyObject = e.getCause();
             }
             out.writeObject(serverMyObject);
             connection.close();

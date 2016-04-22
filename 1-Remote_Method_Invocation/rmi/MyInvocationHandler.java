@@ -62,7 +62,7 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
 
 
         /* Do the real call */
-        myObject returnValue = null;
+        Object returnValue = null;
         try {
             Socket connection = new Socket(address.getHostName(), address.getPort());
             ObjectInputStream in = new ObjectInputStream(connection.getInputStream());
@@ -73,16 +73,16 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
             out.writeObject(method.getReturnType().getName());
             out.writeObject(args);
 
-            returnValue = (myObject)in.readObject();
+            returnValue = in.readObject();
             connection.close();
         } catch (Exception e) {
             throw new RMIException(e.getCause());
         }
 
-        if(returnValue.getExceptionStatus()) {
-            throw (Exception) returnValue.getObject();
+        if(returnValue instanceof Throwable) {
+            throw (Exception) returnValue;
         }
-		return returnValue.getObject();
+		return returnValue;
 	}
 
 
