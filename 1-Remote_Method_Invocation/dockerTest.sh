@@ -17,8 +17,8 @@ LOCAL_DIR=$(pwd)
 # Set the image directories
 WORK_DIR='/root/RMI'
 
-# Set the port
-#PORT=7000
+# Set the idNumber
+ID_NUM=100
 
 #########################################################################
 # Create Docker machine (if neccesary)
@@ -77,7 +77,7 @@ docker run -itd --name $SERVER_CONTAINER -v $LOCAL_DIR:$WORK_DIR $IMAGE bash $WO
 
 SERVER_IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $SERVER_CONTAINER)
 
-docker run -itd --name $CLIENT_CONTAINER -v $LOCAL_DIR:$WORK_DIR $IMAGE bash $WORK_DIR/compile_and_runClient.sh $SERVER_IP
+docker run -itd --name $CLIENT_CONTAINER -v $LOCAL_DIR:$WORK_DIR $IMAGE bash $WORK_DIR/compile_and_runClient.sh $SERVER_IP $ID_NUM
 
 sleep 5
 docker logs $CLIENT_CONTAINER
