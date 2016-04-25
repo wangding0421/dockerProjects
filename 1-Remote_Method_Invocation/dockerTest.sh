@@ -17,9 +17,9 @@ LOCAL_DIR=$(pwd)
 # Set the image directories
 WORK_DIR='/root/RMI'
 
-# Set the idNumber
+# Set the idNumber and the output file name
 ID_NUM=100
-
+OUTPUT_FILE=clientOutput
 #########################################################################
 # Create Docker machine (if neccesary)
 #########################################################################
@@ -79,8 +79,10 @@ SERVER_IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $SERVER_C
 
 docker run -itd --name $CLIENT_CONTAINER -v $LOCAL_DIR:$WORK_DIR $IMAGE bash $WORK_DIR/compile_and_runClient.sh $SERVER_IP $ID_NUM
 
-sleep 5
+sleep 10
 docker logs $CLIENT_CONTAINER
-
+docker logs $CLIENT_CONTAINER > $OUTPUT_FILE
+python verifyTestResult.py $OUTPUT_FILE $ID_NUM
+rm $OUTPUT_FILE
 docker stop $CLIENT_CONTAINER $SERVER_CONTAINER
 docker rm $CLIENT_CONTAINER $SERVER_CONTAINER

@@ -4,5 +4,5 @@ import rmi.RMIException;
 
 public interface HelloInterface
 {
-    public String sayHello(int idNumber) throws RMIException;
+    public String ping(int idNumber) throws RMIException;
 }

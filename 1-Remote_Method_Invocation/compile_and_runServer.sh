@@ -1,3 +1,3 @@
 make
 
-java hellotest/HelloServer
+java hellotest/PingServerFactory
