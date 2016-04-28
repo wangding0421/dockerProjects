@@ -55,6 +55,7 @@ public abstract class Stub
         if(c == null || skeleton == null) {
             throw new NullPointerException();
         } else if(skeleton.getHostName() == null || !skeleton.getRunningStatus() ) {
+            System.out.println("lalal    " + skeleton.getHostName() + "   : " + skeleton.getRunningStatus());
             throw new IllegalStateException();
         } else if( !c.isInterface() || !RMIExcpetionCheck(c) ) {
             throw new Error("C does not represent a remote interface");

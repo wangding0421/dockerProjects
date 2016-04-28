@@ -16,7 +16,7 @@ public class pThread extends Thread {
 
     public void run() {
         try {
-            Object serverMyObject = null;
+            myObject serverMyObject = null;
             ObjectOutputStream out = new ObjectOutputStream(this.connection.getOutputStream());
             out.flush();
             ObjectInputStream in = new ObjectInputStream(this.connection.getInputStream());
@@ -26,15 +26,14 @@ public class pThread extends Thread {
             String returnType = (String) in.readObject();
 
             try {
-                serverMyObject = serverMethod.invoke(this.skeleton.getServer(), (Object[])in.readObject());
-            }
-            catch (Throwable e) {
-                serverMyObject = e.getCause();
+                Object serverObject = serverMethod.invoke(this.skeleton.getServer(), (Object[])in.readObject());
+                serverMyObject = new myObject(serverObject, false);
+            } catch (Throwable e) {
+                serverMyObject = new myObject(e.getCause(), true);
             }
             out.writeObject(serverMyObject);
             connection.close();
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             this.skeleton.service_error(new RMIException(e.getCause()));
         }
     }
