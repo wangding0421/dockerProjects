@@ -44,7 +44,6 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
 
                 if(args.length != 1) throw new Error("equals method called incorrectly");
                 if(args[0] == null) return false;
-                System.out.println(args[0].getClass());
 
                 if(!java.lang.reflect.Proxy.isProxyClass(args[0].getClass())) return false;
                 //if(!ProxyFactory.isProxyClass(args[0].getClass())) return false;
