@@ -101,8 +101,10 @@ public class Skeleton<T>
 
         this.sclass = c;
         this.server = server;
-        this.port = address.getPort();
-        this.hostName = address.getHostName();
+        if(address != null) {
+            this.port = address.getPort();
+            this.hostName = address.getHostName();
+        }
     }
 
 
