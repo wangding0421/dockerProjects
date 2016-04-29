@@ -22,8 +22,6 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
             method.getParameterTypes().length == 0) {
                 return "Interface name : " + this.interfaceclass.getName() + "\n"
                 + "Connecting to : " + this.address.toString();
-            } else {
-                throw new RMIException("toString method called incorrectly");
             }
         }
 
@@ -32,6 +30,9 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
             if (method.getReturnType().getName().equals("int") &&
             method.getParameterTypes().length == 0) {
                 return this.interfaceclass.hashCode() * 1011 + this.address.hashCode() * 17;
+            } else if(method.getReturnType().getName().equals("int") &&
+            method.getParameterTypes().length == 1) {
+                return args[0].hashCode();
             } else {
                 throw new RMIException("hashCode method called incorrectly");
             }
@@ -40,9 +41,10 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
         /* check if two proxy are same. */
         if(method.getName().equals("equals")) {
             if(method.getReturnType().getName().equals("boolean") &&
-            method.getParameterTypes().length == 1)  {
+            method.getParameterTypes().length == 1 &&
+            method.getParameterTypes()[0].getName() == "java.lang.Object")  {
 
-                if(args.length != 1) throw new Error("equals method called incorrectly");
+                //if(args.length != 1) throw new Error("equals method called incorrectly");
                 if(args[0] == null) return false;
 
                 if(!java.lang.reflect.Proxy.isProxyClass(args[0].getClass())) return false;
@@ -58,8 +60,6 @@ public class MyInvocationHandler implements InvocationHandler, Serializable {
                 else {
                     return false;
                 }
-            } else {
-                throw new RMIException("equals method called incorrectly");
             }
         }
 
