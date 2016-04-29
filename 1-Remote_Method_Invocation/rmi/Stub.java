@@ -152,7 +152,7 @@ public abstract class Stub
 
     /* check if all the methods of an interface have thrown RMIException */
     private static boolean RMIExcpetionCheck(Class<?> c){
-        Method[] methods = c.getDeclaredMethods();
+        Method[] methods = c.getMethods();
         for (Method method : methods) {
             Class<?>[] exceptions = method.getExceptionTypes();
             if (!Arrays.asList(exceptions).contains(RMIException.class)) {
