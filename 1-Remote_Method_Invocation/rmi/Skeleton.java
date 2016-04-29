@@ -247,7 +247,7 @@ public class Skeleton<T>
     }
 
     private static boolean RMIExcpetionCheck(Class<?> c){
-        Method[] methods = c.getDeclaredMethods();
+        Method[] methods = c.getMethods();
         for (Method method : methods) {
             Class<?>[] exceptions = method.getExceptionTypes();
             if (!Arrays.asList(exceptions).contains(RMIException.class)) {
