@@ -62,7 +62,9 @@ public class SecurityTest extends Test
 
         try
         {
+            System.out.println("inin");
             stub.testMethodTwo();
+            System.out.println("outout");
             throw new TestFailed("skeleton permitted call to method not " +
                                  "declared in the interface for which it was " +
                                  "created");

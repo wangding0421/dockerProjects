@@ -186,7 +186,7 @@ public class Skeleton<T>
                     this.hostName = listen_socket.getInetAddress().getHostName();
                 }
 
-                lThread listen_thread = new lThread(this, listen_socket);
+                lThread listen_thread = new lThread(this, listen_socket, sclass);
                 listen_thread.start();
             }
             catch (Throwable e) {

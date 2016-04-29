@@ -76,7 +76,6 @@ public class ImplicitStubCallTest
 
         try
         {
-            System.out.println("lalal    " + skeleton.getHostName());
             stub = Stub.create(remote_interface, skeleton);
         }
         catch(Throwable t)
