@@ -28,5 +28,7 @@
 *.exe
 *.out
 *.app
-
 *.class
+
+# Compressed files
+*.zip
