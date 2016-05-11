@@ -119,7 +119,7 @@ public class StorageServer implements Storage, Command
 		// 		this.storageSkeleton.wait();
 		// 	} catch (InterruptedException e) {}
     	// }
-
+        isRunning = false;
     }
 
     /** Called when the storage server has shut down.
@@ -135,21 +135,49 @@ public class StorageServer implements Storage, Command
     @Override
     public synchronized long size(Path file) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+        File f = file.toFile(this.root);
+    	if (!f.exists() || f.isDirectory())
+    		throw new FileNotFoundException();
+    	return f.length();
     }
 
     @Override
     public synchronized byte[] read(Path file, long offset, int length)
         throws FileNotFoundException, IOException
     {
-        throw new UnsupportedOperationException("not implemented");
+        File f = file.toFile(this.root);
+    	if (!f.exists() || f.isDirectory())
+            throw new FileNotFoundException();
+
+    	if(offset < 0 || length < 0 || offset + length > f.length())
+    		throw new IndexOutOfBoundsException();
+
+    	byte[] result = new byte[length];
+    	RandomAccessFile fileReader = new RandomAccessFile(f, "r");
+        fileReader.seek(offset);
+    	fileReader.read(result, 0, length);
+    	fileReader.close();
+
+    	return result;
     }
 
     @Override
     public synchronized void write(Path file, long offset, byte[] data)
         throws FileNotFoundException, IOException
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (offset < 0){
+            throw new IndexOutOfBoundsException();
+        }
+
+        File f = file.toFile(this.root);
+
+    	if (!f.exists() || f.isDirectory())
+    		throw new FileNotFoundException();
+
+    	RandomAccessFile fileWriter = new RandomAccessFile(f,"rw");
+        fileWriter.seek(offset);
+    	fileWriter.write(data);
+    	fileWriter.close();
     }
 
     // The following methods are documented in Command.java.
