@@ -84,7 +84,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     @Override
     public Iterator<String> iterator()
     {
-        throw new UnsupportedOperationException("not implemented");
+        return this.pathComponents.iterator();
     }
 
     /** Lists the paths of all files in a directory tree on the local
@@ -99,7 +99,25 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
      */
     public static Path[] list(File directory) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+        if(!directory.exists())
+        	throw new FileNotFoundException();
+        if (!directory.isDirectory())
+            throw new IllegalArgumentException();
+
+        ArrayList<Path> result = new ArrayList<Path>();
+        for (File file : directory.listFiles()){
+            if (file.isDirectory()){
+                Path[] subdirResult = Path.list(file);
+                for (Path path : subdirResult)
+                    result.add(new Path("/" + file.getName() + path.toString()));
+            } else {
+                result.add(new Path("/" + file.getName()));
+            }
+        }
+
+        Path[] resultArray = new Path[result.size()];
+        result.toArray(resultArray);
+        return resultArray;
     }
 
     /** Determines whether the path represents the root directory.
@@ -229,7 +247,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     @Override
     public int hashCode()
     {
-        throw new UnsupportedOperationException("not implemented");
+        return this.toString().hashCode();
     }
 
     /** Converts the path to a string.
