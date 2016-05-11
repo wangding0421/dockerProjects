@@ -40,7 +40,7 @@ public class StorageServer implements Storage, Command
     public StorageServer(File root, int client_port, int command_port)
     {
         if (root == null)
-    	   throw new NullPointerException();
+            throw new NullPointerException();
 
         this.root = root;
         this.storageSkeleton = new NotifySkeleton<Storage>(Storage.class, this, new InetSocketAddress(client_port));
@@ -86,15 +86,15 @@ public class StorageServer implements Storage, Command
     public synchronized void start(String hostname, Registration naming_server)
         throws RMIException, UnknownHostException, FileNotFoundException
     {
-    	this.commandSkeleton.start();
-    	this.storageSkeleton.start();
+        this.commandSkeleton.start();
+        this.storageSkeleton.start();
 
         Storage storageStub = Stub.create(Storage.class, this.storageSkeleton, hostname);
         Command commandStub = Stub.create(Command.class, this.commandSkeleton, hostname);
 
-    	Path[] duplicatedPaths = naming_server.register(storageStub, commandStub, Path.list(this.root));
-    	for (Path path : duplicatedPaths)
-    		this.delete(path);
+        Path[] duplicatedPaths = naming_server.register(storageStub, commandStub, Path.list(this.root));
+        for (Path path : duplicatedPaths)
+            this.delete(path);
         pruneDirectoriesWithNoFile(this.root);
         isRunning = true;
     }
@@ -113,12 +113,13 @@ public class StorageServer implements Storage, Command
     	// 	} catch (InterruptedException e) {}
     	// }
 
-    	this.storageSkeleton.stop();
+        this.storageSkeleton.stop();
     	// synchronized(this.storageSkeleton){
 	    // 	try {
 		// 		this.storageSkeleton.wait();
 		// 	} catch (InterruptedException e) {}
     	// }
+
         isRunning = false;
     }
 
@@ -136,9 +137,9 @@ public class StorageServer implements Storage, Command
     public synchronized long size(Path file) throws FileNotFoundException
     {
         File f = file.toFile(this.root);
-    	if (!f.exists() || f.isDirectory())
-    		throw new FileNotFoundException();
-    	return f.length();
+        if (!f.exists() || f.isDirectory())
+            throw new FileNotFoundException();
+        return f.length();
     }
 
     @Override
@@ -146,38 +147,37 @@ public class StorageServer implements Storage, Command
         throws FileNotFoundException, IOException
     {
         File f = file.toFile(this.root);
-    	if (!f.exists() || f.isDirectory())
+        if (!f.exists() || f.isDirectory())
             throw new FileNotFoundException();
 
-    	if(offset < 0 || length < 0 || offset + length > f.length())
-    		throw new IndexOutOfBoundsException();
+        if(offset < 0 || length < 0 || offset + length > f.length())
+            throw new IndexOutOfBoundsException();
 
-    	byte[] result = new byte[length];
-    	RandomAccessFile fileReader = new RandomAccessFile(f, "r");
+        byte[] result = new byte[length];
+        RandomAccessFile fileReader = new RandomAccessFile(f, "r");
         fileReader.seek(offset);
-    	fileReader.read(result, 0, length);
-    	fileReader.close();
+        fileReader.read(result, 0, length);
+        fileReader.close();
 
-    	return result;
+        return result;
     }
 
     @Override
     public synchronized void write(Path file, long offset, byte[] data)
         throws FileNotFoundException, IOException
     {
-        if (offset < 0){
+        if (offset < 0)
             throw new IndexOutOfBoundsException();
-        }
 
         File f = file.toFile(this.root);
 
-    	if (!f.exists() || f.isDirectory())
-    		throw new FileNotFoundException();
+        if (!f.exists() || f.isDirectory())
+            throw new FileNotFoundException();
 
-    	RandomAccessFile fileWriter = new RandomAccessFile(f,"rw");
+        RandomAccessFile fileWriter = new RandomAccessFile(f,"rw");
         fileWriter.seek(offset);
-    	fileWriter.write(data);
-    	fileWriter.close();
+        fileWriter.write(data);
+        fileWriter.close();
     }
 
     // The following methods are documented in Command.java.
@@ -191,8 +191,8 @@ public class StorageServer implements Storage, Command
     public synchronized boolean delete(Path path)
     {
         if (path.isRoot())
-    		return false;
-    	return this.delete(path.toFile(this.root));
+            return false;
+        return this.delete(path.toFile(this.root));
     }
 
     @Override
@@ -221,17 +221,17 @@ public class StorageServer implements Storage, Command
     private boolean pruneDirectoriesWithNoFile(File root) {
         boolean isEmpty = true;
 
-    	for (File f : root.listFiles()){
-    		if (f.isDirectory())
-    			isEmpty = isEmpty && pruneDirectoriesWithNoFile(f);
-    		else
-    			isEmpty = false;
-    	}
+        for (File f : root.listFiles()){
+            if (f.isDirectory())
+                isEmpty = isEmpty && pruneDirectoriesWithNoFile(f);
+            else
+                isEmpty = false;
+        }
 
-    	if (isEmpty)
-    		root.delete();
+        if (isEmpty)
+            root.delete();
 
-    	return isEmpty;
+        return isEmpty;
     }
 
 }
