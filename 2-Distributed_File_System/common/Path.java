@@ -2,6 +2,7 @@ package common;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /** Distributed filesystem paths.
 
@@ -21,10 +22,14 @@ import java.util.*;
  */
 public class Path implements Iterable<String>, Comparable<Path>, Serializable
 {
+
+    /* /var/log/readme */
+    private CopyOnWriteArrayList<String> pathComponents;
+
     /** Creates a new path which represents the root directory. */
     public Path()
     {
-        throw new UnsupportedOperationException("not implemented");
+        this.pathComponents = new CopyOnWriteArrayList<String>();
     }
 
     /** Creates a new path by appending the given component to an existing path.
@@ -38,7 +43,10 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     */
     public Path(Path path, String component)
     {
-        throw new UnsupportedOperationException("not implemented");
+        this(path.toString());
+    	if (component.contains(":") || component.contains("/") || component.length() == 0)
+    		throw new IllegalArgumentException();
+    	this.pathComponents.add(component);
     }
 
     /** Creates a new path from a path string.
@@ -55,7 +63,14 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
      */
     public Path(String path)
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (!path.startsWith("/") || path.contains(":"))
+    		throw new IllegalArgumentException();
+    	this.pathComponents = new CopyOnWriteArrayList<String>();
+        String[] components = path.split("/");
+        for (String component : components) {
+            if(component.length() == 0) continue;
+            this.pathComponents.add(component);
+        }
     }
 
     /** Returns an iterator over the components of the path.
@@ -94,7 +109,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
      */
     public boolean isRoot()
     {
-        throw new UnsupportedOperationException("not implemented");
+        return this.pathComponents.isEmpty();
     }
 
     /** Returns the path to the parent of this path.
@@ -104,7 +119,13 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
      */
     public Path parent()
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (this.isRoot())
+    		throw new IllegalArgumentException();
+        int size = this.pathComponents.size();
+        String temp = this.pathComponents.remove(size-1);
+    	String parentPath = this.toString();
+    	this.pathComponents.add(temp);
+    	return new Path(parentPath);
     }
 
     /** Returns the last component in the path.
@@ -115,7 +136,9 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
      */
     public String last()
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (this.isRoot())
+    		throw new IllegalArgumentException();
+    	return this.pathComponents.get(this.pathComponents.size()-1);
     }
 
     /** Determines if the given path is a subpath of this path.
@@ -130,7 +153,9 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
      */
     public boolean isSubpath(Path other)
     {
-        throw new UnsupportedOperationException("not implemented");
+        String path1 = this.toString();
+        String path2 = other.toString();
+        return path1.startsWith(path2);
     }
 
     /** Converts the path to <code>File</code> object.
@@ -197,7 +222,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     @Override
     public boolean equals(Object other)
     {
-        throw new UnsupportedOperationException("not implemented");
+        return this.toString().equals(other.toString());
     }
 
     /** Returns the hash code of the path. */
@@ -218,6 +243,14 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     @Override
     public String toString()
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (this.pathComponents.isEmpty())
+    		return "/";
+
+    	String path = "";
+    	for(String component : this.pathComponents) {
+    		path += "/";
+    		path += component;
+    	}
+    	return path;
     }
 }
