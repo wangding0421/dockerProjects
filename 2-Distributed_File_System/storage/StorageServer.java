@@ -184,7 +184,23 @@ public class StorageServer implements Storage, Command
     @Override
     public synchronized boolean create(Path file)
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (file.isRoot())
+            return false;
+
+        Path parent = file.parent();
+        if (!parent.toFile(this.root).exists())
+            parent.toFile(this.root).mkdirs();
+
+        File f = file.toFile(this.root);
+        // true if the named file does not exist and was successfully created; false if the named file already exists
+        boolean flag = false;
+        try {
+            flag = f.createNewFile();
+		} catch (IOException e) {
+
+		}
+
+        return flag;
     }
 
     @Override
