@@ -16,6 +16,12 @@ import naming.*;
  */
 public class StorageServer implements Storage, Command
 {
+
+    private Skeleton<Storage> storageSkeleton;
+    private Skeleton<Command> commandSkeleton;
+    private File root;
+    boolean isRunning = false;
+
     /** Creates a storage server, given a directory on the local filesystem, and
         ports to use for the client and command interfaces.
 
@@ -33,7 +39,12 @@ public class StorageServer implements Storage, Command
     */
     public StorageServer(File root, int client_port, int command_port)
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (root == null)
+    	   throw new NullPointerException();
+
+        this.root = root;
+        this.storageSkeleton = new NotifySkeleton<Storage>(Storage.class, this, new InetSocketAddress(client_port));
+        this.commandSkeleton = new NotifySkeleton<Command>(Command.class, this, new InetSocketAddress(command_port));
     }
 
     /** Creats a storage server, given a directory on the local filesystem.
@@ -49,7 +60,7 @@ public class StorageServer implements Storage, Command
      */
     public StorageServer(File root)
     {
-        throw new UnsupportedOperationException("not implemented");
+        this(root, 0, 0);
     }
 
     /** Starts the storage server and registers it with the given naming
@@ -75,7 +86,17 @@ public class StorageServer implements Storage, Command
     public synchronized void start(String hostname, Registration naming_server)
         throws RMIException, UnknownHostException, FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+    	this.commandSkeleton.start();
+    	this.storageSkeleton.start();
+
+        Storage storageStub = Stub.create(Storage.class, this.storageSkeleton, hostname);
+        Command commandStub = Stub.create(Command.class, this.commandSkeleton, hostname);
+
+    	Path[] duplicatedPaths = naming_server.register(storageStub, commandStub, Path.list(this.root));
+    	for (Path path : duplicatedPaths)
+    		this.delete(path);
+        pruneDirectoriesWithNoFile(this.root);
+        isRunning = true;
     }
 
     /** Stops the storage server.
@@ -85,7 +106,20 @@ public class StorageServer implements Storage, Command
      */
     public void stop()
     {
-        throw new UnsupportedOperationException("not implemented");
+        this.commandSkeleton.stop();
+    	// synchronized(this.commandSkeleton){
+    	// 	try {
+    	// 		this.commandSkeleton.wait();
+    	// 	} catch (InterruptedException e) {}
+    	// }
+
+    	this.storageSkeleton.stop();
+    	// synchronized(this.storageSkeleton){
+	    // 	try {
+		// 		this.storageSkeleton.wait();
+		// 	} catch (InterruptedException e) {}
+    	// }
+
     }
 
     /** Called when the storage server has shut down.
@@ -128,7 +162,9 @@ public class StorageServer implements Storage, Command
     @Override
     public synchronized boolean delete(Path path)
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (path.isRoot())
+    		return false;
+    	return this.delete(path.toFile(this.root));
     }
 
     @Override
@@ -137,4 +173,37 @@ public class StorageServer implements Storage, Command
     {
         throw new UnsupportedOperationException("not implemented");
     }
+
+
+
+/***************************help functions********************************/
+
+    private boolean delete(File f) {
+        if (f.isDirectory()) {
+            for (File c : f.listFiles()) {
+                boolean flag = delete(c);
+                if(!flag) return false;
+            }
+        }
+        if (!f.delete())
+            return false;
+        return true;
+    }
+
+    private boolean pruneDirectoriesWithNoFile(File root) {
+        boolean isEmpty = true;
+
+    	for (File f : root.listFiles()){
+    		if (f.isDirectory())
+    			isEmpty = isEmpty && pruneDirectoriesWithNoFile(f);
+    		else
+    			isEmpty = false;
+    	}
+
+    	if (isEmpty)
+    		root.delete();
+
+    	return isEmpty;
+    }
+
 }
