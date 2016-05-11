@@ -184,7 +184,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
      */
     public File toFile(File root)
     {
-        throw new UnsupportedOperationException("not implemented");
+        return new File(root, this.toString());
     }
 
     /** Compares this path to another.
@@ -226,7 +226,12 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     @Override
     public int compareTo(Path other)
     {
-        throw new UnsupportedOperationException("not implemented");
+        String path1 = this.toString();
+        String path2 = other.toString();
+        if(path1.equals(path2)) return 0;
+        if(this.isSubpath(other)) return 1;
+        if(other.isSubpath(this)) return -1;
+        return path1.compareTo(path2);
     }
 
     /** Compares two paths for equality.
