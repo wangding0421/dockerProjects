@@ -8,6 +8,8 @@ import rmi.*;
 import common.*;
 import storage.*;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /** Naming server.
 
     <p>
@@ -33,6 +35,13 @@ import storage.*;
  */
 public class NamingServer implements Service, Registration
 {
+
+	private Skeleton<Service> serviceSkeleton;
+	private Skeleton<Registration> registrationSkeleton;
+
+	/* consider replica, a file may be stored in several storage servers */
+	private ConcurrentHashMap<Path, HashSet<Storage>> pathStorageMap;
+
     /** Creates the naming server object.
 
         <p>
@@ -40,7 +49,9 @@ public class NamingServer implements Service, Registration
      */
     public NamingServer()
     {
-        throw new UnsupportedOperationException("not implemented");
+    	this.serviceSkeleton = new NotifySkeleton<Service>(Service.class, this, new InetSocketAddress(NamingStubs.SERVICE_PORT));
+		this.registrationSkeleton = new NotifySkeleton<Registration>(Registration.class, this, new InetSocketAddress(NamingStubs.REGISTRATION_PORT));
+		this.pathStorageMap = new ConcurrentHashMap<Path, HashSet<Storage>>();
     }
 
     /** Starts the naming server.
@@ -56,7 +67,8 @@ public class NamingServer implements Service, Registration
      */
     public synchronized void start() throws RMIException
     {
-        throw new UnsupportedOperationException("not implemented");
+		this.serviceSkeleton.start();
+        this.registrationSkeleton.start();
     }
 
     /** Stops the naming server.
@@ -70,7 +82,21 @@ public class NamingServer implements Service, Registration
      */
     public void stop()
     {
-        throw new UnsupportedOperationException("not implemented");
+		this.serviceSkeleton.stop();
+		synchronized(this.serviceSkeleton){
+	    	try {
+				this.serviceSkeleton.wait();
+			} catch (InterruptedException e) {}
+    	}
+
+    	this.registrationSkeleton.stop();
+		synchronized(this.registrationSkeleton){
+	    	try {
+				this.registrationSkeleton.wait();
+			} catch (InterruptedException e) {}
+    	}
+
+		this.stopped(null);
     }
 
     /** Indicates that the server has completely shut down.

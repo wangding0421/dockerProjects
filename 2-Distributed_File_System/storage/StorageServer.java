@@ -107,20 +107,21 @@ public class StorageServer implements Storage, Command
     public void stop()
     {
         this.commandSkeleton.stop();
-    	// synchronized(this.commandSkeleton){
-    	// 	try {
-    	// 		this.commandSkeleton.wait();
-    	// 	} catch (InterruptedException e) {}
-    	// }
+    	synchronized(this.commandSkeleton){
+    		try {
+    			this.commandSkeleton.wait();
+    		} catch (InterruptedException e) {}
+    	}
 
         this.storageSkeleton.stop();
-    	// synchronized(this.storageSkeleton){
-	    // 	try {
-		// 		this.storageSkeleton.wait();
-		// 	} catch (InterruptedException e) {}
-    	// }
+    	synchronized(this.storageSkeleton){
+	    	try {
+				this.storageSkeleton.wait();
+			} catch (InterruptedException e) {}
+    	}
 
         isRunning = false;
+        this.stopped(null);
     }
 
     /** Called when the storage server has shut down.
