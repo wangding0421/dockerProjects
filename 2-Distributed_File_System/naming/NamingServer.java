@@ -40,7 +40,9 @@ public class NamingServer implements Service, Registration
 	private Skeleton<Registration> registrationSkeleton;
 
 	/* consider replica, a file may be stored in several storage servers */
-	private ConcurrentHashMap<Path, HashSet<Storage>> pathStorageMap;
+	private ConcurrentHashMap<Path, Set<Storage>> pathStorageMap;
+
+	private ConcurrentHashMap<Storage, Command> storageCommandMap;
 
     /** Creates the naming server object.
 
@@ -51,7 +53,8 @@ public class NamingServer implements Service, Registration
     {
     	this.serviceSkeleton = new NotifySkeleton<Service>(Service.class, this, new InetSocketAddress(NamingStubs.SERVICE_PORT));
 		this.registrationSkeleton = new NotifySkeleton<Registration>(Registration.class, this, new InetSocketAddress(NamingStubs.REGISTRATION_PORT));
-		this.pathStorageMap = new ConcurrentHashMap<Path, HashSet<Storage>>();
+		this.pathStorageMap = new ConcurrentHashMap<Path, Set<Storage>>();
+		this.storageCommandMap = new ConcurrentHashMap<Storage, Command>();
     }
 
     /** Starts the naming server.
@@ -167,6 +170,15 @@ public class NamingServer implements Service, Registration
     public Path[] register(Storage client_stub, Command command_stub,
                            Path[] files)
     {
-        throw new UnsupportedOperationException("not implemented");
+		throw new UnsupportedOperationException("not implemented");
+		// if (client_stub == null || command_stub == null)
+		// 	throw new NullPointerException();
+		//
+    	// if (this.storageCommandMap.containsKey(client_stub)){
+    	// 	throw new IllegalStateException();
+    	// } else {
+    	// 	this.storageCommandMap.put(client_stub, command_stub);
+    	// }
+
     }
 }
