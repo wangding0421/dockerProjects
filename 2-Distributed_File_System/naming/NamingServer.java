@@ -161,13 +161,47 @@ public class NamingServer implements Service, Registration
     public boolean createFile(Path file)
         throws RMIException, FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+		if(!file.isRoot() && !this.fileStructure.containsKey(file.parent()))
+			throw new FileNotFoundException();
+
+		if(this.storageCommandMap.isEmpty())
+			throw new IllegalStateException();
+
+		if(file.isRoot()) return false;
+		if(this.fileStructure.containsKey(file)) return false;
+		if(this.pathStorageMap.containsKey(file)) return false;
+
+		Storage curStorageStub = (this.storageCommandMap.keySet()).iterator().next();
+		Command curCommandStub = this.storageCommandMap.get(curStorageStub);
+
+		boolean flag = curCommandStub.create(file);
+
+		if(flag){
+			update(file);
+			Set<Storage> storage = new HashSet<Storage>();
+			storage.add(curStorageStub);
+			this.pathStorageMap.put(file, storage);
+		}
+
+		return flag;
     }
 
     @Override
     public boolean createDirectory(Path directory) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+		/* 如果父文件夹不存在,返回exception */
+		if (!directory.isRoot() && !this.fileStructure.containsKey(directory.parent()))
+    		throw new FileNotFoundException();
+
+		if(directory.isRoot()) return false;
+		if(this.fileStructure.containsKey(directory)) return false;
+		if(this.pathStorageMap.containsKey(directory)) return false;
+
+		update(directory);
+		Set<Path> filesInDirectory = new HashSet<Path>();
+		this.fileStructure.put(directory, filesInDirectory);
+
+		return true;
     }
 
     @Override
