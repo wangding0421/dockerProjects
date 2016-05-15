@@ -44,6 +44,8 @@ public class NamingServer implements Service, Registration
 
 	private ConcurrentHashMap<Storage, Command> storageCommandMap;
 
+	private ConcurrentHashMap<Path, Set<Path>> fileStructure;
+
     /** Creates the naming server object.
 
         <p>
@@ -55,6 +57,7 @@ public class NamingServer implements Service, Registration
 		this.registrationSkeleton = new NotifySkeleton<Registration>(Registration.class, this, new InetSocketAddress(NamingStubs.REGISTRATION_PORT));
 		this.pathStorageMap = new ConcurrentHashMap<Path, Set<Storage>>();
 		this.storageCommandMap = new ConcurrentHashMap<Storage, Command>();
+		this.fileStructure = new ConcurrentHashMap<Path, Set<Path>>();
     }
 
     /** Starts the naming server.
@@ -131,13 +134,27 @@ public class NamingServer implements Service, Registration
     @Override
     public boolean isDirectory(Path path) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+		boolean isDirectory = this.fileStructure.containsKey(path);
+		boolean isFile = this.pathStorageMap.containsKey(path);
+
+		if(!isDirectory && !isFile)
+			throw new FileNotFoundException();
+
+		return isDirectory;
     }
 
     @Override
     public String[] list(Path directory) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+		if (!this.isDirectory(directory))
+			throw new FileNotFoundException();
+		Set<Path> files = this.fileStructure.get(directory);
+		String[] filesInDirectory = new String[files.size()];
+		int i = 0;
+		for(Path path : files) {
+			filesInDirectory[i++] = path.last();
+		}
+		return filesInDirectory;
     }
 
     @Override
@@ -162,7 +179,9 @@ public class NamingServer implements Service, Registration
     @Override
     public Storage getStorage(Path file) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+		if (!this.pathStorageMap.containsKey(file))
+			throw new FileNotFoundException();
+		return (this.pathStorageMap.get(file)).iterator().next();
     }
 
     // The method register is documented in Registration.java.
@@ -170,15 +189,58 @@ public class NamingServer implements Service, Registration
     public Path[] register(Storage client_stub, Command command_stub,
                            Path[] files)
     {
-		throw new UnsupportedOperationException("not implemented");
-		// if (client_stub == null || command_stub == null)
-		// 	throw new NullPointerException();
-		//
-    	// if (this.storageCommandMap.containsKey(client_stub)){
-    	// 	throw new IllegalStateException();
-    	// } else {
-    	// 	this.storageCommandMap.put(client_stub, command_stub);
-    	// }
+		// throw new UnsupportedOperationException("not implemented");
+		if (client_stub == null || command_stub == null || files == null)
+			throw new NullPointerException();
+    	if (this.storageCommandMap.containsKey(client_stub))
+    		throw new IllegalStateException();
 
+    	this.storageCommandMap.put(client_stub, command_stub);
+
+		ArrayList<Path> duplicatedPaths = new ArrayList<Path>();
+		for (Path path : files){
+			if(path.isRoot()) {
+				continue;
+			} else if(this.pathStorageMap.containsKey(path) || this.fileStructure.containsKey(path)) {
+				// this file has been added or this directory has been added
+				duplicatedPaths.add(path);
+			} else {
+				Set<Storage> storage = new HashSet<Storage>();
+				storage.add(client_stub);
+    			this.pathStorageMap.put(path, storage);
+    			this.update(path);
+			}
+		}
+
+		Path[] duplicatedPathsRes = new Path[duplicatedPaths.size()];
+	    duplicatedPaths.toArray(duplicatedPathsRes);
+	    return duplicatedPathsRes;
     }
+
+
+
+	/**********helper function*****************/
+
+	/* when you create a file like /a/b/c
+	 * you should map a to b, b to c in the tree structure
+	*/
+	private boolean update(Path path){
+		Path childNode = path;
+
+		while (!childNode.isRoot()){
+			Path parentNode = childNode.parent();
+			if(this.fileStructure.containsKey(parentNode)){
+				this.fileStructure.get(parentNode).add(childNode);
+			} else {
+				Set<Path> filesInDirectory = new HashSet<Path>();
+				filesInDirectory.add(childNode);
+				this.fileStructure.put(parentNode, filesInDirectory);
+			}
+			childNode = parentNode;
+		}
+
+		return true;
+	}
+
+
 }
