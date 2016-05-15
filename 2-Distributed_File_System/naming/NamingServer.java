@@ -134,13 +134,13 @@ public class NamingServer implements Service, Registration
     @Override
     public boolean isDirectory(Path path) throws FileNotFoundException
     {
-		boolean isDirectory = this.fileStructure.containsKey(path);
-		boolean isFile = this.pathStorageMap.containsKey(path);
+		boolean isExistedDirectory = this.fileStructure.containsKey(path);
+		boolean isExistedFile = this.pathStorageMap.containsKey(path);
 
-		if(!isDirectory && !isFile)
+		if(!isExistedDirectory && !isExistedFile)
 			throw new FileNotFoundException();
 
-		return isDirectory;
+		return isExistedDirectory;
     }
 
     @Override
@@ -151,9 +151,8 @@ public class NamingServer implements Service, Registration
 		Set<Path> files = this.fileStructure.get(directory);
 		String[] filesInDirectory = new String[files.size()];
 		int i = 0;
-		for(Path path : files) {
+		for(Path path : files)
 			filesInDirectory[i++] = path.last();
-		}
 		return filesInDirectory;
     }
 
@@ -177,10 +176,10 @@ public class NamingServer implements Service, Registration
 		boolean flag = curCommandStub.create(file);
 
 		if(flag){
-			update(file);
 			Set<Storage> storage = new HashSet<Storage>();
 			storage.add(curStorageStub);
 			this.pathStorageMap.put(file, storage);
+			update(file);
 		}
 
 		return flag;
