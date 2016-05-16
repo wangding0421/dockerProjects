@@ -58,7 +58,7 @@ public class NamingServer implements Service, Registration
      */
     public NamingServer()
     {
-    	this.serviceSkeleton = new NotifySkeleton<Service>(Service.class, this, new InetSocketAddress(NamingStubs.SERVICE_PORT));
+		this.serviceSkeleton = new NotifySkeleton<Service>(Service.class, this, new InetSocketAddress(NamingStubs.SERVICE_PORT));
 		this.registrationSkeleton = new NotifySkeleton<Registration>(Registration.class, this, new InetSocketAddress(NamingStubs.REGISTRATION_PORT));
 		this.pathStorageMap = new ConcurrentHashMap<Path, Set<Storage>>();
 		this.storageCommandMap = new ConcurrentHashMap<Storage, Command>();
@@ -82,7 +82,7 @@ public class NamingServer implements Service, Registration
     public synchronized void start() throws RMIException
     {
 		this.serviceSkeleton.start();
-        this.registrationSkeleton.start();
+		this.registrationSkeleton.start();
     }
 
     /** Stops the naming server.
@@ -98,17 +98,17 @@ public class NamingServer implements Service, Registration
     {
 		this.serviceSkeleton.stop();
 		synchronized(this.serviceSkeleton){
-	    	try {
+			try {
 				this.serviceSkeleton.wait();
 			} catch (InterruptedException e) {}
-    	}
+		}
 
-    	this.registrationSkeleton.stop();
+		this.registrationSkeleton.stop();
 		synchronized(this.registrationSkeleton){
-	    	try {
+			try {
 				this.registrationSkeleton.wait();
 			} catch (InterruptedException e) {}
-    	}
+		}
 
 		this.stopped(null);
     }
@@ -131,7 +131,7 @@ public class NamingServer implements Service, Registration
     public void lock(Path path, boolean exclusive) throws FileNotFoundException
     {
 		if(path == null) throw new NullPointerException();
-    	if(!this.dfsLocks.containsKey(path)) throw new FileNotFoundException();
+		if(!this.dfsLocks.containsKey(path)) throw new FileNotFoundException();
 
 		Path[] lockPaths = path.subPaths();
 
@@ -163,8 +163,8 @@ public class NamingServer implements Service, Registration
 
 		if(!exclusive && !this.fileStructure.containsKey(path) && this.dfsLocks.get(path).getRequests() > readRequestThreshold) {
 			Set<Storage> existedStorages = this.pathStorageMap.get(path);
-    		Set<Storage> storageServers = new HashSet<Storage>(this.storageCommandMap.keySet());
-    		storageServers.removeAll(existedStorages);
+			Set<Storage> storageServers = new HashSet<Storage>(this.storageCommandMap.keySet());
+			storageServers.removeAll(existedStorages);
 
 			Storage replicaMachine = null;
 			if(storageServers != null && storageServers.size() > 0)
@@ -174,7 +174,7 @@ public class NamingServer implements Service, Registration
 				Command replicaCommand = this.storageCommandMap.get(replicaMachine);
 				ReplicaThread myThread = new ReplicaThread(path, replicaCommand, existedStorages, replicaMachine);
 				myThread.run();
-    		}
+			}
 		}
 
 		/* write lock, if multiple copy, delete dirty Copy,
@@ -316,13 +316,12 @@ public class NamingServer implements Service, Registration
     public Path[] register(Storage client_stub, Command command_stub,
                            Path[] files)
     {
-		// throw new UnsupportedOperationException("not implemented");
 		if (client_stub == null || command_stub == null || files == null)
 			throw new NullPointerException();
-    	if (this.storageCommandMap.containsKey(client_stub))
-    		throw new IllegalStateException();
+		if (this.storageCommandMap.containsKey(client_stub))
+			throw new IllegalStateException();
 
-    	this.storageCommandMap.put(client_stub, command_stub);
+		this.storageCommandMap.put(client_stub, command_stub);
 
 		ArrayList<Path> duplicatedPaths = new ArrayList<Path>();
 		for (Path path : files){
@@ -338,10 +337,10 @@ public class NamingServer implements Service, Registration
     			this.update(path);
 			}
 		}
-
+		
 		Path[] duplicatedPathsRes = new Path[duplicatedPaths.size()];
-	    duplicatedPaths.toArray(duplicatedPathsRes);
-	    return duplicatedPathsRes;
+		duplicatedPaths.toArray(duplicatedPathsRes);
+		return duplicatedPathsRes;
     }
 
 
