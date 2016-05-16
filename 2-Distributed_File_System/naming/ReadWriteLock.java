@@ -28,16 +28,4 @@ public class ReadWriteLock {
         notifyAll();
 	}
 
-    public synchronized boolean isReadLocked() {
-        return readLockHolders > 0;
-    }
-
-    public synchronized boolean isWriteLocked() {
-        return isWriteLocked;
-    }
-
-    public synchronized boolean hasPendingWriter() {
-        return pendingWriteRequests > 0;
-    }
-
 }
