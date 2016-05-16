@@ -9,6 +9,7 @@ import common.*;
 import storage.*;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 /** Naming server.
 
@@ -48,6 +49,8 @@ public class NamingServer implements Service, Registration
 
 	private ConcurrentHashMap<Path, ReadWriteLock> dfsLocks;
 
+	private final int readRequestThreshold = 5;
+
     /** Creates the naming server object.
 
         <p>
@@ -60,6 +63,7 @@ public class NamingServer implements Service, Registration
 		this.pathStorageMap = new ConcurrentHashMap<Path, Set<Storage>>();
 		this.storageCommandMap = new ConcurrentHashMap<Storage, Command>();
 		this.fileStructure = new ConcurrentHashMap<Path, Set<Path>>();
+		this.fileStructure.put(new Path(), new HashSet());
 		this.dfsLocks = new ConcurrentHashMap<Path, ReadWriteLock>();
 		this.dfsLocks.put(new Path(), new ReadWriteLock());
     }
@@ -155,6 +159,47 @@ public class NamingServer implements Service, Registration
 					throw new IllegalStateException();
 				}
 			}
+		}
+
+		if(!exclusive && !this.fileStructure.containsKey(path) && this.dfsLocks.get(path).getRequests() > readRequestThreshold) {
+    		Set<Storage> existedStorages = this.pathStorageMap.get(path);
+    		Set<Storage> storageServers = new HashSet<Storage>(this.storageCommandMap.keySet());
+    		storageServers.removeAll(existedStorages);
+
+    		Storage replicaMachine = null;
+			if(storageServers != null && storageServers.size() > 0)
+				replicaMachine = storageServers.iterator().next();
+
+    		if(replicaMachine != null){
+    			Command replicaCommand = this.storageCommandMap.get(replicaMachine);
+				ReplicaThread myThread = new ReplicaThread(path, replicaCommand, existedStorages, replicaMachine);
+				myThread.run();
+    		}
+		}
+
+		/* write lock, if multiple copy, delete dirty Copy,
+		 * if I have 3 copys in 3 server A, B, C, if I want to write new contents to A,
+		 * then I have to delete dirty copy in B & C
+		 */
+		if(exclusive && !this.fileStructure.containsKey(path) && this.pathStorageMap.get(path).size() >= 2){
+
+			Set<Storage> existedStorages = this.pathStorageMap.get(path);
+			Set<Storage> deletedStorages = new HashSet<Storage>();
+
+			int i = 0;
+
+			for(Storage storage : existedStorages) {
+				if(i++ == 0) continue;
+				Command commandStub = this.storageCommandMap.get(storage);
+				try {
+					commandStub.delete(path);
+					deletedStorages.add(storage);
+				} catch (Exception e) {
+					throw new IllegalStateException();
+				}
+			}
+
+			existedStorages.removeAll(deletedStorages);
 		}
 
     }
@@ -329,6 +374,5 @@ public class NamingServer implements Service, Registration
 
 		return true;
 	}
-
 
 }
