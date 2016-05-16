@@ -7,6 +7,8 @@ import common.*;
 import rmi.*;
 import naming.*;
 
+import java.util.*;
+
 /** Storage server.
 
     <p>
@@ -216,7 +218,12 @@ public class StorageServer implements Storage, Command
     public synchronized boolean copy(Path file, Storage server)
         throws RMIException, FileNotFoundException, IOException
     {
-        throw new UnsupportedOperationException("not implemented");
+        int size = (int)server.size(file);
+        this.delete(file.toFile(this.root));
+        this.create(file);
+        byte[] data = server.read(file, 0, size);
+        this.write(file, 0, data);
+        return true;
     }
 
 
