@@ -276,4 +276,19 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     	}
     	return path;
     }
+
+    /***************helper functions******************/
+    public Path[] subPaths() {
+        Path[] paths = new Path[pathComponents.size() + 1];
+        paths[0] = new Path();
+        String path = "";
+        int i = 1;
+        for(String component : this.pathComponents) {
+            path += "/";
+            path += component;
+            paths[i++] = new Path(path);
+        }
+        return paths;
+    }
+
 }

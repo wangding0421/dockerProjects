@@ -46,6 +46,8 @@ public class NamingServer implements Service, Registration
 
 	private ConcurrentHashMap<Path, Set<Path>> fileStructure;
 
+	private ConcurrentHashMap<Path, ReadWriteLock> dfsLocks;
+
     /** Creates the naming server object.
 
         <p>
@@ -58,6 +60,8 @@ public class NamingServer implements Service, Registration
 		this.pathStorageMap = new ConcurrentHashMap<Path, Set<Storage>>();
 		this.storageCommandMap = new ConcurrentHashMap<Storage, Command>();
 		this.fileStructure = new ConcurrentHashMap<Path, Set<Path>>();
+		this.dfsLocks = new ConcurrentHashMap<Path, ReadWriteLock>();
+		this.dfsLocks.put(new Path(), new ReadWriteLock());
     }
 
     /** Starts the naming server.
@@ -122,13 +126,58 @@ public class NamingServer implements Service, Registration
     @Override
     public void lock(Path path, boolean exclusive) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+		if(path == null) throw new NullPointerException();
+    	if(!this.dfsLocks.containsKey(path)) throw new FileNotFoundException();
+
+		Path[] lockPaths = path.subPaths();
+
+		for(int i = 0; i < lockPaths.length; i++) {
+
+			if(i == lockPaths.length - 1) {
+				if(exclusive) {
+					try {
+						dfsLocks.get(lockPaths[i]).lockWrite();
+					} catch (InterruptedException e) {
+						throw new IllegalStateException();
+					}
+				} else {
+					try {
+						dfsLocks.get(lockPaths[i]).lockRead();
+					} catch (InterruptedException e) {
+						throw new IllegalStateException();
+					}
+				}
+			} else {
+				/* deal with parent directory, share access */
+				try {
+					dfsLocks.get(lockPaths[i]).lockRead();
+				} catch (InterruptedException e) {
+					throw new IllegalStateException();
+				}
+			}
+		}
+
     }
 
     @Override
     public void unlock(Path path, boolean exclusive)
     {
-        throw new UnsupportedOperationException("not implemented");
+		if(path == null) throw new NullPointerException();
+		if (!this.dfsLocks.containsKey(path)) throw new IllegalArgumentException();
+
+    	Path[] lockPaths = path.subPaths();
+
+    	for(int i = 0; i < lockPaths.length; i++) {
+			if(i == lockPaths.length - 1) {
+				if(exclusive) {
+					dfsLocks.get(lockPaths[i]).unlockWrite();
+				} else {
+					dfsLocks.get(lockPaths[i]).unlockRead();
+				}
+			} else {
+				dfsLocks.get(lockPaths[i]).unlockRead();
+			}
+    	}
     }
 
     @Override
@@ -260,8 +309,14 @@ public class NamingServer implements Service, Registration
 	private boolean update(Path path){
 		Path childNode = path;
 
+		if(!this.dfsLocks.containsKey(childNode))
+			this.dfsLocks.put(childNode, new ReadWriteLock());
+
 		while (!childNode.isRoot()){
 			Path parentNode = childNode.parent();
+			if(!this.dfsLocks.containsKey(parentNode)) {
+				this.dfsLocks.put(parentNode, new ReadWriteLock());
+			}
 			if(this.fileStructure.containsKey(parentNode)){
 				this.fileStructure.get(parentNode).add(childNode);
 			} else {
