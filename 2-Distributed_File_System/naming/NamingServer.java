@@ -162,16 +162,16 @@ public class NamingServer implements Service, Registration
 		}
 
 		if(!exclusive && !this.fileStructure.containsKey(path) && this.dfsLocks.get(path).getRequests() > readRequestThreshold) {
-    		Set<Storage> existedStorages = this.pathStorageMap.get(path);
+			Set<Storage> existedStorages = this.pathStorageMap.get(path);
     		Set<Storage> storageServers = new HashSet<Storage>(this.storageCommandMap.keySet());
     		storageServers.removeAll(existedStorages);
 
-    		Storage replicaMachine = null;
+			Storage replicaMachine = null;
 			if(storageServers != null && storageServers.size() > 0)
 				replicaMachine = storageServers.iterator().next();
 
-    		if(replicaMachine != null){
-    			Command replicaCommand = this.storageCommandMap.get(replicaMachine);
+			if(replicaMachine != null){
+				Command replicaCommand = this.storageCommandMap.get(replicaMachine);
 				ReplicaThread myThread = new ReplicaThread(path, replicaCommand, existedStorages, replicaMachine);
 				myThread.run();
     		}
