@@ -165,9 +165,9 @@ public class NamingServer implements Service, Registration
 		if(path == null) throw new NullPointerException();
 		if (!this.dfsLocks.containsKey(path)) throw new IllegalArgumentException();
 
-    	Path[] lockPaths = path.subPaths();
+		Path[] lockPaths = path.subPaths();
 
-    	for(int i = 0; i < lockPaths.length; i++) {
+		for(int i = 0; i < lockPaths.length; i++) {
 			if(i == lockPaths.length - 1) {
 				if(exclusive) {
 					dfsLocks.get(lockPaths[i]).unlockWrite();
@@ -177,8 +177,8 @@ public class NamingServer implements Service, Registration
 			} else {
 				dfsLocks.get(lockPaths[i]).unlockRead();
 			}
-    	}
-    }
+		}
+	}
 
     @Override
     public boolean isDirectory(Path path) throws FileNotFoundException
