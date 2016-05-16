@@ -97,19 +97,8 @@ public class NamingServer implements Service, Registration
     public void stop()
     {
 		this.serviceSkeleton.stop();
-		synchronized(this.serviceSkeleton){
-			try {
-				this.serviceSkeleton.wait();
-			} catch (InterruptedException e) {}
-		}
-
 		this.registrationSkeleton.stop();
-		synchronized(this.registrationSkeleton){
-			try {
-				this.registrationSkeleton.wait();
-			} catch (InterruptedException e) {}
-		}
-
+		
 		this.stopped(null);
     }
 
@@ -337,7 +326,7 @@ public class NamingServer implements Service, Registration
     			this.update(path);
 			}
 		}
-		
+
 		Path[] duplicatedPathsRes = new Path[duplicatedPaths.size()];
 		duplicatedPaths.toArray(duplicatedPathsRes);
 		return duplicatedPathsRes;
