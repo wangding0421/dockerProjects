@@ -161,8 +161,7 @@ public class NamingServer implements Service, Registration
 
 			if(replicaMachine != null){
 				Command replicaCommand = this.storageCommandMap.get(replicaMachine);
-				ReplicaThread myThread = new ReplicaThread(path, replicaCommand, existedStorages, replicaMachine);
-				myThread.run();
+				new ReplicaThread(path, replicaCommand, existedStorages, replicaMachine).run();
 			}
 		}
 
