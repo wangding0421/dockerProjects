@@ -305,8 +305,8 @@ public class NamingServer implements Service, Registration
 
 		this.dfsLocks.remove(path);
 		this.pathStorageMap.remove(path);
-    	this.fileStructure.get(path.parent()).remove(path);
-        return true;
+		this.fileStructure.get(path.parent()).remove(path);
+		return true;
     }
 
     @Override
