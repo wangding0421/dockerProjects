@@ -98,7 +98,7 @@ public class NamingServer implements Service, Registration
     {
 		this.serviceSkeleton.stop();
 		this.registrationSkeleton.stop();
-		
+
 		this.stopped(null);
     }
 
@@ -289,7 +289,24 @@ public class NamingServer implements Service, Registration
     @Override
     public boolean delete(Path path) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+		if(path == null) throw new NullPointerException();
+		if(path.isRoot()) return false;
+		if(!this.dfsLocks.containsKey(path)) throw new FileNotFoundException();
+		if(!this.fileStructure.containsKey(path.parent())) throw new FileNotFoundException();
+
+		for (Storage s : this.storageCommandMap.keySet()){
+			Command commandStub = this.storageCommandMap.get(s);
+			try {
+				commandStub.delete(path);
+			} catch(Exception e) {
+				System.out.println("delete failed");
+			}
+		}
+
+		this.dfsLocks.remove(path);
+		this.pathStorageMap.remove(path);
+    	this.fileStructure.get(path.parent()).remove(path);
+        return true;
     }
 
     @Override
