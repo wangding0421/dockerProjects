@@ -171,9 +171,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
      */
     public boolean isSubpath(Path other)
     {
-        String path1 = this.toString();
-        String path2 = other.toString();
-        return path1.startsWith(path2);
+        return this.toString().startsWith(other.toString());
     }
 
     /** Converts the path to <code>File</code> object.
