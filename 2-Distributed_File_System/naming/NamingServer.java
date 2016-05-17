@@ -124,30 +124,23 @@ public class NamingServer implements Service, Registration
 
 		Path[] lockPaths = path.subPaths();
 
-		for(int i = 0; i < lockPaths.length; i++) {
+		try {
 
-			if(i == lockPaths.length - 1) {
-				if(exclusive) {
-					try {
+			for(int i = 0; i < lockPaths.length; i++) {
+
+				if(i == lockPaths.length - 1) {
+					if(exclusive) {
 						dfsLocks.get(lockPaths[i]).lockWrite();
-					} catch (InterruptedException e) {
-						throw new IllegalStateException();
+					} else {
+						dfsLocks.get(lockPaths[i]).lockRead();
 					}
 				} else {
-					try {
-						dfsLocks.get(lockPaths[i]).lockRead();
-					} catch (InterruptedException e) {
-						throw new IllegalStateException();
-					}
-				}
-			} else {
-				/* deal with parent directory, share access */
-				try {
+					/* deal with parent directory, share access */
 					dfsLocks.get(lockPaths[i]).lockRead();
-				} catch (InterruptedException e) {
-					throw new IllegalStateException();
 				}
 			}
+		} catch (InterruptedException e) {
+			throw new IllegalStateException();
 		}
 
 		if(!exclusive && !this.fileStructure.containsKey(path) && this.dfsLocks.get(path).getRequests() > readRequestThreshold) {
