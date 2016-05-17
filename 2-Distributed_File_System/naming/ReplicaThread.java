@@ -3,18 +3,9 @@ package naming;
 import java.io.*;
 import rmi.*;
 
-/******************************************************************************
- *
- * Authors: Christopher Tomaszewski (CKT) & Dinesh Palanisamy (DINESHP)
- *
- ******************************************************************************/
-
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import storage.Command;
-import storage.Storage;
-import common.Path;
+import java.util.*;
+import storage.*;
+import common.*;
 
 public class ReplicaThread implements Runnable {
 
