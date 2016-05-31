@@ -95,7 +95,7 @@ docker cp master:/root/$OUTPUT_FILE ./$OUTPUT_FILE
 
 python bigramSort.py $OUTPUT_FILE
 
-#rm $OUTPUT_FILE
+rm $OUTPUT_FILE
 
 docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
