@@ -36,4 +36,5 @@ $HADOOP_INSTALL/bin/hdfs dfs -cat output2/part-00000
 # Copy the bigram result to local machine
 $HADOOP_INSTALL/bin/hdfs dfs -cat output2/part-00000 > bigramResult
 
+echo -e "\nLogging out the nodes status:"
 serf members
